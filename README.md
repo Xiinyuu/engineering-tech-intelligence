@@ -48,9 +48,8 @@ engineering-tech-intelligence/
 ├── README.md
 ├── SECURITY.md
 ├── PUBLICATION_CHECKLIST.md
-├── workflow/
-│   ├── public-demo.json
-│   └── sanitized-reference.json
+├── workflow
+│   └── public-demo.json
 ├── prompts/
 │   ├── noise-filter.zh.md
 │   ├── powertrain-relevance.zh.md
