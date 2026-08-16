@@ -1,0 +1,16 @@
+[
+  {
+    "source": "Demo Engineering Source A",
+    "title": "Supplier introduces higher-efficiency traction inverter module",
+    "published_at": "2026-08-15T08:00:00+08:00",
+    "content": "Synthetic engineering article used only for workflow demonstration.",
+    "url": "https://example.com/demo/inverter"
+  },
+  {
+    "source": "Demo Engineering Source B",
+    "title": "Registration opens for an automotive technology training course",
+    "published_at": "2026-08-15T09:00:00+08:00",
+    "content": "Synthetic event notice with no substantive engineering development.",
+    "url": "https://example.com/demo/training"
+  }
+]
