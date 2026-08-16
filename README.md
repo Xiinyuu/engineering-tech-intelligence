@@ -1,45 +1,216 @@
 # Human-in-the-Loop Engineering Technology Intelligence
 
-A portfolio-oriented n8n workflow for turning high-volume, heterogeneous technical information into **structured evidence for engineering review**.
+An n8n-based demonstrator for turning high-volume, heterogeneous technical information into **structured evidence for engineering review and R&D decision support**.
 
-The project demonstrates a practical pattern for industrial AI decision support:
+The project explores a practical question:
 
-**collect / ingest → normalize → deduplicate → filter noise → assess relevance → classify → score & summarize → human review**
+> **How can LLMs reduce information overload in engineering R&D without removing human engineering judgement from the decision loop?**
 
-> This public repository is a sanitized demonstrator. It contains no company data, supplier data, private source registry, internal database identifiers, or credentials.
+Rather than treating AI as an autonomous decision-maker, the workflow uses LLMs to support information filtering, classification, evaluation and summarization while preserving source traceability and human review.
+
+---
+
+## System overview
+
+```mermaid
+flowchart LR
+    A[Technical Sources] --> B[Ingestion & Normalization]
+    B --> C[Deduplication]
+    C --> D[Noise Filtering]
+    D --> E[Engineering Relevance Assessment]
+    E --> F[Technical Classification]
+    F --> G[Engineering Value Scoring]
+    F --> H[Technical Summarization]
+    G --> I[Structured Evidence]
+    H --> I
+    I --> J[Human Engineering Review]
+```
+
+**Core pipeline:**  
+`Sources → Normalize → Deduplicate → Filter → Classify → Evaluate → Summarize → Human Review`
+
+The public workflow uses synthetic inputs. The production-inspired implementation connects multiple information sources, LLM processing stages and structured downstream storage.
+
+---
 
 ## Why this project
 
-Engineering R&D teams face more technical information than an individual engineer can review consistently. The challenge is not simply summarization: information must first be filtered, categorized, evaluated, and kept traceable to its source before it can support an engineering decision.
+Engineering R&D teams often face more technical information than an individual engineer can review consistently. The challenge is not simply summarization.
 
-This workflow uses LLMs as **information-processing assistants**, while keeping the engineer in the loop for verification, prioritization, and downstream decisions.
+Before information can support an engineering decision, it must be:
+
+- screened for relevance;
+- separated from promotional or administrative noise;
+- categorized into technical domains;
+- evaluated using explicit engineering criteria;
+- summarized without introducing unsupported claims;
+- kept traceable to the original source;
+- reviewed by a human engineer before downstream use.
+
+This workflow was developed as a practical exploration of that information-to-decision chain.
+
+---
 
 ## What the workflow does
 
-1. Normalizes incoming technical items.
-2. Removes duplicate items using link/title/content-derived keys.
-3. Filters promotional and administrative noise.
-4. Assesses whether an item is relevant to automotive powertrain engineering.
-5. Classifies relevant items into technical domains.
-6. Produces an engineering-value score and concise technical summaries.
-7. Returns a structured record for human review and optional downstream storage.
+### 1. Ingestion and preprocessing
+
+Incoming technical items are normalized into a common structure containing title, source, publication time, content and original link.
+
+The workflow then performs time filtering and duplicate detection before invoking LLM-based processing.
+
+### 2. Noise and relevance filtering
+
+Two separate stages reduce information overload:
+
+- **Noise filtering** removes promotional, administrative and low-information items.
+- **Engineering relevance assessment** determines whether an item contains meaningful automotive powertrain technology information.
+
+Keeping these stages separate avoids treating every industry-related item as technically relevant.
+
+### 3. Technical classification
+
+Relevant information is organized into engineering domains such as:
+
+- electric motors and power electronics;
+- batteries;
+- internal combustion engines;
+- integrated drive units;
+- other technical information.
+
+The classification layer can be replaced with another domain taxonomy without changing the overall architecture.
+
+### 4. Engineering-value assessment
+
+Relevant items are evaluated using explicit criteria such as:
+
+- **innovation** — whether the item presents a new technical route, architecture, product or method;
+- **engineering feasibility** — whether the information demonstrates practical engineering relevance or implementation potential.
+
+The resulting score is intended for **prioritization**, not as an autonomous engineering judgement.
+
+### 5. Technical summarization
+
+The workflow produces concise technical summaries while constraining the LLM to the supplied source content.
+
+Important technical entities, performance data and engineering implications are preserved where supported by the original text.
+
+### 6. Human review
+
+The final output is a structured record for engineering review. The engineer remains responsible for verifying the source, interpreting the evidence and deciding whether the information should influence further investigation or engineering work.
+
+---
 
 ## Human-in-the-loop design
 
-The system does **not** autonomously make engineering decisions.
+The system deliberately separates **information processing** from **engineering judgement**.
 
-LLM outputs are treated as intermediate evidence:
-- the original title/content/link remain available for traceability;
-- summarization is constrained to the supplied source text;
-- scoring is separated from relevance filtering;
-- unsupported claims of external verification are explicitly avoided;
-- final interpretation and use remain with an engineer.
+LLM outputs are treated as intermediate evidence rather than final decisions:
 
-This makes the workflow a small demonstrator of **human-in-the-loop decision support and trustworthy industrial AI** rather than a fully autonomous agent.
+- original title, content and source link remain available for traceability;
+- relevance filtering is separated from scoring;
+- summarization is constrained to supplied evidence;
+- unsupported external verification is not claimed;
+- final interpretation and prioritization remain with a human engineer.
 
-## Architecture
+This makes the project a small demonstrator of **human-in-the-loop decision support and trustworthy industrial AI**, rather than a fully autonomous agent.
 
-See [`docs/architecture.md`](docs/architecture.md).
+---
+
+## Implementation in n8n
+
+The full implementation is intentionally modular. Conceptually, it can be read as three blocks:
+
+### A. Data preparation
+
+`Source ingestion → normalization → date filtering → deduplication`
+<img width="1325" height="607" alt="image" src="https://github.com/user-attachments/assets/bb7d4494-3a63-4e38-89de-0566323d974c" />
+
+
+### B. AI-assisted technical assessment
+
+`Noise filtering → engineering relevance → technical classification`
+<img width="1450" height="524" alt="image" src="https://github.com/user-attachments/assets/bbe1956c-b67f-4a6f-af58-4d2e18e0c996" />
+
+
+### C. Decision-support output
+
+`Engineering-value scoring + technical summarization → structured record → human review`
+<img width="895" height="413" alt="image" src="https://github.com/user-attachments/assets/e44aa3e0-4dac-4392-82dd-b4d3c7e6ae75" />
+
+
+The actual n8n workflow contains branching and merging logic because classification, scoring and summarization are handled as separate processing paths. The complete public demonstrator is available here:
+
+[`workflow/public-demo.json`](workflow/public-demo.json)
+
+A higher-level architecture description is available in:
+
+[`docs/architecture.md`](docs/architecture.md)
+
+---
+
+## Example
+
+Synthetic examples are included to demonstrate the expected data structure without exposing private industrial information:
+
+- [`examples/sample-input.json`](examples/sample-input.json)
+- [`examples/sample-output.json`](examples/sample-output.json)
+
+A simplified conceptual transformation is:
+
+```text
+Technical article
+      ↓
+Relevant to engineering?
+      ↓
+Technical domain
+      ↓
+Engineering value + concise evidence summary
+      ↓
+Engineer reviews original source and AI-assisted output
+```
+
+---
+
+## Prompt layer
+
+The public repository separates the main LLM tasks into reusable prompt modules:
+
+- [`prompts/noise-filter.zh.md`](prompts/noise-filter.zh.md)
+- [`prompts/powertrain-relevance.zh.md`](prompts/powertrain-relevance.zh.md)
+- [`prompts/engineering-value-scoring.zh.md`](prompts/engineering-value-scoring.zh.md)
+- [`prompts/technical-summarization.zh.md`](prompts/technical-summarization.zh.md)
+
+The production source corpus is primarily Chinese, so the example prompt templates are currently written in Chinese. The architecture itself is language-agnostic.
+
+---
+
+## Technology
+
+- **n8n** — workflow orchestration
+- **LLMs** — relevance assessment, classification, scoring and summarization
+- **JavaScript** — normalization, parsing, identifier generation and deduplication logic
+- **RSS / API integrations** — source ingestion in the production-inspired architecture
+- **Structured data output** — downstream review and knowledge-management workflows
+
+---
+
+## Scope and limitations
+
+This repository is a **demonstrator**, not a validated autonomous engineering system.
+
+LLM outputs can be inconsistent, sensitive to prompt or model changes, and incorrect. A production-grade system for consequential engineering use would require additional measures such as:
+
+- benchmark datasets and quantitative evaluation;
+- confidence or uncertainty handling;
+- stronger provenance tracking;
+- explicit human approval gates;
+- access control and audit logging;
+- systematic monitoring of model and prompt changes.
+
+These limitations are part of the motivation for exploring trustworthy human-in-the-loop AI in engineering environments.
+
+---
 
 ## Repository structure
 
@@ -47,8 +218,7 @@ See [`docs/architecture.md`](docs/architecture.md).
 engineering-tech-intelligence/
 ├── README.md
 ├── SECURITY.md
-├── PUBLICATION_CHECKLIST.md
-├── workflow
+├── workflow/
 │   └── public-demo.json
 ├── prompts/
 │   ├── noise-filter.zh.md
@@ -62,40 +232,10 @@ engineering-tech-intelligence/
     └── architecture.md
 ```
 
-## Two workflow files
-
-### `public-demo.json`
-The recommended file for a public portfolio. It starts from synthetic demo articles and contains no private Feishu/Lark integration. After import, attach your own supported LLM credentials in n8n.
-
-### `sanitized-reference.json`
-A closer representation of the production architecture. Private identifiers and credential references have been removed or replaced with placeholders. It is included to show the full integration pattern, not as a zero-configuration demo.
-
-## Important implementation fixes included in the public version
-
-The sanitized version also corrects several issues discovered during publication review:
-
-- scoring levels now use thresholds consistent with a 0–100 total score (`>=80` high, `>=50` medium);
-- deduplication reads the normalized article-title/link field names correctly;
-- duplicate detection prefers canonical link/title across sources instead of automatically including the source name;
-- the noise-filter label typo `Irrelavent` is corrected to `Irrelevant`;
-- engineering-value scoring no longer instructs the LLM to claim an external industry search when no retrieval/search tool is connected.
-
-## Technology
-
-- n8n
-- LLM-based classification and summarization
-- JavaScript transformation nodes
-- RSS/API/database integrations in the private deployment
-- structured JSON-style outputs for downstream knowledge systems
-
-## Language
-
-The production source corpus is primarily Chinese, so the included prompt templates are in Chinese. The architecture and methodology are language-agnostic and can be adapted by replacing the prompt layer.
-
-## Scope and limitations
-
-This is a workflow demonstrator, not a validated autonomous engineering system. LLM classifications and scores can be inconsistent, sensitive to prompt/model changes, and wrong. For consequential engineering use, evaluation datasets, confidence/uncertainty handling, provenance tracking, access control, and formal human-review gates should be added.
+---
 
 ## Publication note
 
-The production implementation uses private source registries and collaborative database integrations. Those integrations are intentionally excluded from the public demonstrator.
+This public repository is a sanitized demonstrator. It contains no company data, supplier data, private source registry, internal database identifiers or credentials.
+
+The production-inspired workflow architecture originally includes private source registries and collaborative database integrations. Those elements are intentionally excluded from the public demonstrator.
